@@ -32,10 +32,10 @@ app.set('trust proxy', 1);
 ========================= */
 app.use(helmet());
 
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  "http://localhost:3000",
-];
+// ✅ FIX: بدل قائمة ثابتة فيها origin واحد بس + لوكال هوست، هلق منستخدم
+// helper بيدعم أكتر من رابط بنفس الوقت (Production على Vercel + لوكال
+// هوست أثناء التطوير) عن طريق CLIENT_URLS (مفصولة بفاصلة) أو CLIENT_URL.
+const { allowedOrigins } = require('./utils/clientOrigins');
 
 app.use(
   cors({
@@ -43,6 +43,7 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.warn(`🚫 CORS blocked request from origin: ${origin}`);
         callback(new Error("Not allowed by CORS"));
       }
     },

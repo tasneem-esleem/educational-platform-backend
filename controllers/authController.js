@@ -117,16 +117,20 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 const googleCallback = asyncHandler(async (req, res) => {
+  // ✅ FIX: نستخدم الرابط المحسوب فعلياً (نفس الموقع يلي بدأ منه المستخدم
+  // تسجيل الدخول) بدل process.env.CLIENT_URL الثابت دايماً.
+  const clientUrl = req.clientUrl || process.env.CLIENT_URL;
+
   if (!req.user) {
     console.warn('Google OAuth: req.user مفقود في googleCallback.');
-    return res.redirect(`${process.env.CLIENT_URL}/login?error=google_auth_failed`);
+    return res.redirect(`${clientUrl}/login?error=google_auth_failed`);
   }
 
   const token = req.user.generateToken();
   req.user.lastLogin = Date.now();
   await req.user.save({ validateBeforeSave: false });
 
-  res.redirect(`${process.env.CLIENT_URL}/oauth-callback?token=${token}`);
+  res.redirect(`${clientUrl}/oauth-callback?token=${token}`);
 });
 
 module.exports = {
